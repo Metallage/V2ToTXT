@@ -7,17 +7,48 @@ using System.IO;
 
 namespace V2ToTXT
 {
+    enum MonthsTXT : int
+    {
+            Январь = 1,
+            Февраль,
+            Март,
+            Апрель,
+            Май,
+            Июнь,
+            Июль,
+            Август,
+            Сентябрь,
+            Октябрь, 
+            Ноябрь,
+            Декабрь
+       }
+
     class Logica
     {
         private string inputPath;
         private string outputPath;
+        private int year;
         List<FileInfo> dbfFiles = new List<FileInfo>();
+
+
 
         public Logica(string inputPath, string outputPath)
         {
             this.inputPath = inputPath;
             this.outputPath = outputPath;
+            this.year = DateTime.Now.Year;
             if(!Directory.Exists(outputPath))
+            {
+                Directory.CreateDirectory(outputPath);
+            }
+        }
+
+        public Logica(string inputPath, string outputPath, int year)
+        {
+            this.inputPath = inputPath;
+            this.outputPath = outputPath;
+            this.year = year;
+            if (!Directory.Exists(outputPath))
             {
                 Directory.CreateDirectory(outputPath);
             }
@@ -30,83 +61,109 @@ namespace V2ToTXT
 
             searchFiles(dbfDir);
 
-            if (Directory.Exists(outputPath + DateTime.Now.Year.ToString("D4") + "//"))
+            if (Directory.Exists(outputPath + year.ToString("D4") + "//"))
             {
-                Directory.Delete(outputPath + DateTime.Now.Year.ToString("D4") + "//", true);
+                Directory.Delete(outputPath + year.ToString("D4") + "//", true);
             }
 
+            DataTable valutaTabl = new DataTable();
 
             foreach(FileInfo dbfValuta in dbfFiles)
             {
-                if(dbfValuta.Name.ToLower()=="v2.dbf")
+                if((dbfValuta.Name.ToLower()=="v2.dbf")||(dbfValuta.Name.ToLower() == "valuta.dbf"))
                 {
-                    DBFWork v2DBF = new DBFWork(dbfValuta.FullName);
-                    DataTable v2DT = v2DBF.ReadDBF();
-                    string yearDir = v2DT.Rows[0].Field<DateTime>("DATA").Year.ToString("D4");
-
-                    if (yearDir == DateTime.Now.Year.ToString("D4"))
+                    if (!Directory.Exists(outputPath + year + "//"))
                     {
-                        if(!Directory.Exists(outputPath+yearDir+"//"))
-                        {
-                            Directory.CreateDirectory(outputPath + yearDir + "//");
-                        }
-
-                        int monthNum = v2DT.Rows[0].Field<DateTime>("DATA").Month;
-                        string monthFile;
-
-                        switch (monthNum)
-                        {
-                            case 1:
-                                monthFile = "01_Январь.txt";
-                                break;
-                            case 2:
-                                monthFile = "02_Февраль.txt";
-                                break;
-                            case 3:
-                                monthFile = "03_Март.txt";
-                                break;
-                            case 4:
-                                monthFile = "04_Апрель.txt";
-                                break;
-                            case 5:
-                                monthFile = "05_Май.txt";
-                                break;
-                            case 6:
-                                monthFile = "06_Июнь.txt";
-                                break;
-                            case 7:
-                                monthFile = "07_Июль.txt";
-                                break;
-                            case 8:
-                                monthFile = "08_Август.txt";
-                                break;
-                            case 9:
-                                monthFile = "09_Сентябрь.txt";
-                                break;
-                            case 10:
-                                monthFile = "10_Октябрь.txt";
-                                break;
-                            case 11:
-                                monthFile = "11_Ноябрь.txt";
-                                break;
-                            case 12:
-                                monthFile = "12_Декабрь.txt";
-                                break;
-                            default:
-                                monthFile = "99_Не_Знаю.txt";
-                                break;
-                        }
-
-
-                        string outputFile = String.Format($@"{outputPath}{yearDir}/{monthFile}");
-
-                        ValutaPrint txtValuta = new ValutaPrint(outputFile);
-                        txtValuta.ValutaToFile(v2DT);
+                        Directory.CreateDirectory(outputPath + year + "//");
                     }
+
+
+
+                    DBFWork v2DBF = new DBFWork(dbfValuta.FullName);
+                    for(int i =1; i<=12; i++ )
+                    {
+                        DateTime fromTime = new DateTime(year, i, 1);
+                        DateTime toTime = new DateTime(year, i, DateTime.DaysInMonth(year, i));
+
+                        valutaTabl.Clear();
+
+                        if(v2DBF.CheckCount(fromTime, toTime))
+                        {
+                            valutaTabl = v2DBF.ReadbyDate(fromTime, toTime);
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        string monthName = GetMonthName(i);
+
+                        string outputTxtPath = String.Format($@"{outputPath}{year}/{monthName}");
+                        ValutaPrint txtValuta = new ValutaPrint(outputTxtPath);
+                        txtValuta.ValutaToFile(valutaTabl);
+
+                    }
+
+
+
+
+
+
+
+
+                    
                 }
             }
 
 
+        }
+
+        private string GetMonthName(int monthNum)
+        {
+            string monthFile;
+            switch (monthNum)
+            {
+                case 1:
+                    monthFile = "01_Январь.txt";
+                    break;
+                case 2:
+                    monthFile = "02_Февраль.txt";
+                    break;
+                case 3:
+                    monthFile = "03_Март.txt";
+                    break;
+                case 4:
+                    monthFile = "04_Апрель.txt";
+                    break;
+                case 5:
+                    monthFile = "05_Май.txt";
+                    break;
+                case 6:
+                    monthFile = "06_Июнь.txt";
+                    break;
+                case 7:
+                    monthFile = "07_Июль.txt";
+                    break;
+                case 8:
+                    monthFile = "08_Август.txt";
+                    break;
+                case 9:
+                    monthFile = "09_Сентябрь.txt";
+                    break;
+                case 10:
+                    monthFile = "10_Октябрь.txt";
+                    break;
+                case 11:
+                    monthFile = "11_Ноябрь.txt";
+                    break;
+                case 12:
+                    monthFile = "12_Декабрь.txt";
+                    break;
+                default:
+                    monthFile = "99_Не_Знаю.txt";
+                    break;
+            }
+            return monthFile;
         }
 
         /// <summary>
