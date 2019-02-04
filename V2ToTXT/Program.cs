@@ -9,8 +9,52 @@ namespace V2ToTXT
     {
         static void Main(string[] args)
         {
-            Logica mainLogica = new Logica(@"C:\temp\v2\", @"C:\temp\v2txt\");
-            mainLogica.buildTXT();
+            string source = "in//";
+            string output = "valuta//";
+            int year = 2018;
+            bool yearIs = true;
+            //if (args.Length > 0)
+            //{
+            //    int i = 0;
+            //    while ( i < args.Length)
+            //    {
+            //        string arg = args[i];
+            //        if (arg.ToLower() == "-s")
+            //        {
+            //            source = args[i + 1];
+            //            i = +2;
+            //        }
+            //        else if (arg.ToLower() == "-o")
+            //        {
+            //            output = args[i + 1];
+            //            i = +2;
+            //        }
+            //        else if (arg.ToLower() == "-y")
+            //        {
+            //            yearIs = Int32.TryParse(args[i + 1], out year);
+            //            i = +2;
+            //        }
+            //        else
+            //        {
+            //            i++;
+            //        }
+            //    }
+
+                if(yearIs)
+                {
+                    Logica mainLogica = new Logica(source, output, year);
+                    mainLogica.buildTXT();
+                }
+                else
+                {
+                    Logica mainLogica = new Logica(source, output);
+                    mainLogica.buildTXT();
+                }
+
+
+            //}
+
+           
         }
     }
 }

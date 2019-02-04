@@ -11,7 +11,6 @@ namespace V2ToTXT
     class DBFWork
     {
         private string dbfFilePath;
-        //private long[] years;
         private OdbcConnection conDBF = null;
 
 
@@ -20,11 +19,6 @@ namespace V2ToTXT
             this.conDBF = new OdbcConnection();
             conDBF.ConnectionString = @"Driver={Microsoft Access dBase Driver (*.dbf, *.ndx, *.mdx)}; datasource=dBase Files;";
             this.dbfFilePath = dbfFilePath;
-            //years = new long[2];
-            //DateTime year1 = new DateTime(DateTime.Now.Year,1,1);
-            //DateTime year2 = new DateTime(DateTime.Now.Year + 1, 1, 1);
-            //years[0] = (long)year1.ToOADate();
-            //years[1] = (long)year2.ToOADate();
         }
 
         public DBFWork(string dbfFilePath, int year)
@@ -32,11 +26,6 @@ namespace V2ToTXT
             this.conDBF = new OdbcConnection();
             conDBF.ConnectionString = @"Driver={Microsoft Access dBase Driver (*.dbf, *.ndx, *.mdx)}; datasource=dBase Files;";
             this.dbfFilePath = dbfFilePath;
-            //years = new long[2];
-            //DateTime year1 = new DateTime(year, 1, 1);
-            //DateTime year2 = new DateTime(year + 1, 1, 1);
-            //years[0] = (long)year1.ToOADate();
-            //years[1] = (long)year2.ToOADate();
         }
 
 
@@ -69,29 +58,89 @@ namespace V2ToTXT
             return resultTable;
         }
 
+        /// <summary>
+        /// Проверяет имеет ли смысл что либо искать в таблице в интересующий нас период
+        /// </summary>
+        /// <param name="periodFrom">Дата с которой начинается интересующий нас период</param>
+        /// <param name="periodTo">Дата которой оканчивается интересующий нас период</param>
+        /// <returns>Есть ли какие-либо записи</returns>
         public bool CheckCount(DateTime periodFrom, DateTime periodTo)
         {
             bool hasRows = false;
 
+            //Переводим даты начала и конца в понятный для DBF формат
             long minDate = (long)periodFrom.Date.ToOADate();
             long maxDate = (long)periodTo.Date.ToOADate();
 
+            //Таблица хранящая число записей
             DataTable rowsCount = new DataTable();
 
+            //Выполняем SQL запрос на подсчёт строк в итересующий нас период
             conDBF.Open();
-
             OdbcCommand dbfCommand = conDBF.CreateCommand();
             dbfCommand.CommandText = $"SELECT COUNT(*) FROM {dbfFilePath} as V2 WHERE V2.DATA >= {minDate} AND V2.DATA <= {maxDate}; ";
             rowsCount.Load(dbfCommand.ExecuteReader());
             conDBF.Close();
 
-            if(rowsCount.Rows[0].Field<int>(0)!=0)
+            //Если значение больше 0, значит в этот период что-то есть
+            if(rowsCount.Rows[0].Field<int>(0) > 0)
             {
                 hasRows = true;
             }
 
             return hasRows;
         }
+
+        /// <summary>
+        /// Выбираем все уникальные даты курсов валют за месяц
+        /// </summary>
+        /// <param name="year">Год</param>
+        /// <param name="month">Месяц</param>
+        /// <returns>Таблица дат</returns>
+        public DataTable SelectDatesFromMonth(int year, int month)
+        {
+            DataTable dates = new DataTable();
+
+            //Определяем границы дат
+            DateTime firstDay = new DateTime(year, month, 1);
+            DateTime lastDay = new DateTime(year, month, DateTime.DaysInMonth(year,month));
+
+            //Переводим границы дат в понятный для DBF вид
+            long firstDayOA = (long)firstDay.ToOADate();
+            long lastDayOA = (long)lastDay.ToOADate();
+
+            //Выполняем SQL запрос
+            conDBF.Open();
+            OdbcCommand dbfCommand = conDBF.CreateCommand();
+            dbfCommand.CommandText = $"SELECT DISTINCT V2.DATA FROM {dbfFilePath} as V2 WHERE V2.DATA >= {firstDayOA} AND V2.DATA <= {lastDayOA}; ";
+            dates.Load(dbfCommand.ExecuteReader());
+            conDBF.Close();
+
+            return dates;
+        }
+
+        /// <summary>
+        /// Выбирает данные по курсам валют на определённую дату
+        /// </summary>
+        /// <param name="date">Дата</param>
+        /// <returns>Таблица валют</returns>
+        public DataTable SelectByDate(DateTime date)
+        {
+            DataTable valuta = new DataTable();
+
+            //Преобразуем дату в понятный для DBF таблицы формат 
+            long dateOA = (long)date.ToOADate();
+
+            //Выполняем SQL запрос
+            conDBF.Open();
+            OdbcCommand dbfCommand = conDBF.CreateCommand();
+            dbfCommand.CommandText = $"SELECT KOL, BUK, OKURS, KOD FROM {dbfFilePath} as V2 WHERE V2.DATA = {dateOA}; ";
+            valuta.Load(dbfCommand.ExecuteReader());
+            conDBF.Close();
+
+            return valuta;
+        }
+
 
     }
 }
