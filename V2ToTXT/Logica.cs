@@ -59,59 +59,69 @@ namespace V2ToTXT
         {
             DirectoryInfo dbfDir = new DirectoryInfo(inputPath);
 
-            searchFiles(dbfDir);
+            searchFiles(dbfDir); //ищем все вайлы валют и заданной директории
 
+            //Отчищаем директорию вывода
             if (Directory.Exists(outputPath + year.ToString("D4") + "//"))
             {
                 Directory.Delete(outputPath + year.ToString("D4") + "//", true);
             }
 
             DataTable valutaTabl = new DataTable();
+            DataTable dates = new DataTable();
 
-            foreach(FileInfo dbfValuta in dbfFiles)
+            //Перебираем все найденные файлы
+            foreach (FileInfo dbfValuta in dbfFiles)
             {
                 if((dbfValuta.Name.ToLower()=="v2.dbf")||(dbfValuta.Name.ToLower() == "valuta.dbf"))
                 {
+                    //Если нет директории вывода, создаём её
                     if (!Directory.Exists(outputPath + year + "//"))
                     {
                         Directory.CreateDirectory(outputPath + year + "//");
                     }
 
 
-
+                    //Создаём объект ДБФки
                     DBFWork v2DBF = new DBFWork(dbfValuta.FullName);
-                    for(int i =1; i<=12; i++ )
+
+                    //Выбираем по месяцам
+                    for (int i =1; i<=12; i++ )
                     {
-                        DateTime fromTime = new DateTime(year, i, 1);
-                        DateTime toTime = new DateTime(year, i, DateTime.DaysInMonth(year, i));
-
-                        valutaTabl.Clear();
-
-                        if(v2DBF.CheckCount(fromTime, toTime))
-                        {
-                            valutaTabl = v2DBF.ReadbyDate(fromTime, toTime);
-                        }
-                        else
-                        {
-                            break;
-                        }
-
+                        //Подготавливаем к созданию файл с названием месяца
                         string monthName = GetMonthName(i);
-
                         string outputTxtPath = String.Format($@"{outputPath}{year}/{monthName}");
                         ValutaPrint txtValuta = new ValutaPrint(outputTxtPath);
-                        txtValuta.ValutaToFile(valutaTabl);
 
-                    }
+                        ////Устанавливаем границы месяца
+                        //DateTime fromTime = new DateTime(year, i, 1);
+                        //DateTime toTime = new DateTime(year, i, DateTime.DaysInMonth(year, i));
+
+                        //Отчищаем всё предыдущие таблицы
+                        dates.Clear();
+                        valutaTabl.Clear();
+
+                        //Выбираем все интересующие нас даты
+                        dates = v2DBF.SelectDatesFromMonth(year, i);
+
+                        foreach(DataRow dr in dates.Rows)
+                        {
+                            valutaTabl = v2DBF.SelectByDate(dr.Field<DateTime>(0));
+                            txtValuta.ApendTXT(dr.Field<DateTime>(0), valutaTabl);
+                        }
+
+                        ////Если в файлах есть записи за этот месяц то нужно его ковырять
+                        //if (v2DBF.CheckCount(fromTime, toTime))
+                        //{
+                          
+                        //    valutaTabl = v2DBF.ReadbyDate(fromTime, toTime);
+                        //}
 
 
 
+                       // txtValuta.ValutaToFile(valutaTabl);
 
-
-
-
-
-                    
+                    }  
                 }
             }
 

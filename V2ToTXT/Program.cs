@@ -9,52 +9,69 @@ namespace V2ToTXT
     {
         static void Main(string[] args)
         {
-            string source = "in//";
-            string output = "valuta//";
-            int year = 2018;
-            bool yearIs = true;
-            //if (args.Length > 0)
-            //{
-            //    int i = 0;
-            //    while ( i < args.Length)
-            //    {
-            //        string arg = args[i];
-            //        if (arg.ToLower() == "-s")
-            //        {
-            //            source = args[i + 1];
-            //            i = +2;
-            //        }
-            //        else if (arg.ToLower() == "-o")
-            //        {
-            //            output = args[i + 1];
-            //            i = +2;
-            //        }
-            //        else if (arg.ToLower() == "-y")
-            //        {
-            //            yearIs = Int32.TryParse(args[i + 1], out year);
-            //            i = +2;
-            //        }
-            //        else
-            //        {
-            //            i++;
-            //        }
-            //    }
-
-                if(yearIs)
+            string source = null;
+            string output = null;
+            int year = 0;
+            bool yearIs = false;
+            if (args.Length > 0)
+            {
+                
+                for (int i = 0; i < args.Length; i++)
                 {
-                    Logica mainLogica = new Logica(source, output, year);
-                    mainLogica.buildTXT();
+                    string arg = args[i].ToLower();
+                    switch (arg)
+                    {
+                        case "-sdir":
+                            if (args.Length > i+1)
+                            {
+                                source = args[i + 1];
+
+                            }
+                            continue;
+                        case "-o":
+                            if (args.Length > i+1)
+                            {
+                                output = args[i + 1];
+
+                            }
+                            continue;
+
+                        case "-y":
+                            if (args.Length > i+1)
+                            {
+                                yearIs = Int32.TryParse(args[i + 1], out year);
+
+                            }
+                            continue;
+                    }
+                }
+                if (source != null && output != null)
+                {
+                    if (yearIs)
+                    {
+                        Logica mainLogica = new Logica(source, output, year);
+                        mainLogica.buildTXT();
+                    }
+                    else
+                    {
+                        Logica mainLogica = new Logica(source, output);
+                        mainLogica.buildTXT();
+                    }
+
                 }
                 else
                 {
-                    Logica mainLogica = new Logica(source, output);
-                    mainLogica.buildTXT();
+                    if (source == null)
+                    {
+                        Console.WriteLine("Не задан путь к DBF");
+                    }
+                    if (output == null)
+                    {
+                        Console.WriteLine("Не задан путь вывода");
+                    }
                 }
 
-
-            //}
-
-           
+            }
         }
     }
 }

@@ -39,5 +39,35 @@ namespace V2ToTXT
                 }
             }
         }
+
+        public void ApendTXT(DateTime date, DataTable valutaKurs)
+        {
+            if(valutaKurs.Rows.Count>0)
+            {
+                using (StreamWriter valWriter = new StreamWriter(outputTxt, true, Encoding.Default))
+                {
+
+                    valWriter.WriteLine(@"Курсы валют на               {0}/{1}/{2}г.", date.Day.ToString("D2"), date.Month.ToString("D2"), date.Year.ToString("D4"));
+
+                    foreach (DataRow dr in valutaKurs.Rows)
+                    {
+                        string kol = dr.Field<double>("KOL").ToString("N0");
+                        string buk = dr.Field<String>("BUK");
+                        string okurs = dr.Field<double>("OKURS").ToString("C4");
+                        string kod = dr.Field<String>("KOD");
+                        valWriter.WriteLine($"{kol,7} {buk}({kod}) = {okurs}");
+                    }
+
+                    valWriter.WriteLine();
+
+                }
+
+
+            }
+
+        }
+
+
+
     }
 }
