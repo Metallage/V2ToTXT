@@ -16,30 +16,12 @@ namespace V2ToTXT
             this.outputTxt = outputTxt;
         }
 
-        public void ValutaToFile(DataTable v2Table)
-        {
-            if ((v2Table != null)&&(v2Table.Rows.Count>0))
-            {
-                using (StreamWriter valWriter = new StreamWriter(outputTxt, true, Encoding.Default))
-                {
 
-                    valWriter.WriteLine(@"Курсы валют на               {0}/{1}/{2}г.", v2Table.Rows[0].Field<DateTime>("DATA").Day.ToString("D2"), v2Table.Rows[0].Field<DateTime>("DATA").Month.ToString("D2"), v2Table.Rows[0].Field<DateTime>("DATA").Year.ToString("D4"));
-
-                    foreach(DataRow dr in v2Table.Rows)
-                    {
-                        string kol = dr.Field<double>("KOL").ToString("N0");
-                        string buk = dr.Field<String>("BUK");
-                        string okurs = dr.Field<double>("OKURS").ToString("C4");
-                        string kod = dr.Field<String>("KOD");
-                        valWriter.WriteLine($"{kol, 7} {buk}({kod}) = {okurs}" );
-                    }
-
-                    valWriter.WriteLine();
-
-                }
-            }
-        }
-
+        /// <summary>
+        /// Записывает в файл курсы валют по датам
+        /// </summary>
+        /// <param name="date">Дата</param>
+        /// <param name="valutaKurs">Курсы на дату</param>
         public void ApendTXT(DateTime date, DataTable valutaKurs)
         {
             if(valutaKurs.Rows.Count>0)
@@ -59,15 +41,11 @@ namespace V2ToTXT
                     }
 
                     valWriter.WriteLine();
-
                 }
-
 
             }
 
         }
-
-
 
     }
 }

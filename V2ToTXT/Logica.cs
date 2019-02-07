@@ -7,21 +7,7 @@ using System.IO;
 
 namespace V2ToTXT
 {
-    enum MonthsTXT : int
-    {
-            Январь = 1,
-            Февраль,
-            Март,
-            Апрель,
-            Май,
-            Июнь,
-            Июль,
-            Август,
-            Сентябрь,
-            Октябрь, 
-            Ноябрь,
-            Декабрь
-       }
+    
 
     class Logica
     {
@@ -110,24 +96,16 @@ namespace V2ToTXT
                             txtValuta.ApendTXT(dr.Field<DateTime>(0), valutaTabl);
                         }
 
-                        ////Если в файлах есть записи за этот месяц то нужно его ковырять
-                        //if (v2DBF.CheckCount(fromTime, toTime))
-                        //{
-                          
-                        //    valutaTabl = v2DBF.ReadbyDate(fromTime, toTime);
-                        //}
-
-
-
-                       // txtValuta.ValutaToFile(valutaTabl);
-
                     }  
                 }
             }
-
-
         }
 
+        /// <summary>
+        /// Возвращает имя файла по номеру месяца
+        /// </summary>
+        /// <param name="monthNum">Номер месяца</param>
+        /// <returns>Имя файла</returns>
         private string GetMonthName(int monthNum)
         {
             string monthFile;
@@ -170,7 +148,7 @@ namespace V2ToTXT
                     monthFile = "12_Декабрь.txt";
                     break;
                 default:
-                    monthFile = "99_Не_Знаю.txt";
+                    monthFile = "99_Не_Знаю.txt"; //Ну мало ли
                     break;
             }
             return monthFile;

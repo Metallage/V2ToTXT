@@ -12,10 +12,12 @@ namespace V2ToTXT
     {
         private string dbfFilePath;
         private OdbcConnection conDBF = null;
+        //private string[] drivers = new string[2];  
 
 
         public DBFWork(string dbfFilePath)
         {
+
             this.conDBF = new OdbcConnection();
             conDBF.ConnectionString = @"Driver={Microsoft Access dBase Driver (*.dbf, *.ndx, *.mdx)}; datasource=dBase Files;";
             this.dbfFilePath = dbfFilePath;
@@ -29,19 +31,13 @@ namespace V2ToTXT
         }
 
 
-        //public DataTable ReadDBF()
-        //{
-        //    DataTable resultTable = new DataTable();
 
-        //    conDBF.Open();
-        //    OdbcCommand dbfCommand = conDBF.CreateCommand();
-        //    dbfCommand.CommandText = $"SELECT * FROM {dbfFilePath} as V2 WHERE V2.DATA >= {years[0]} AND V2.DATA < {years[1]}; ";
-        //    resultTable.Load(dbfCommand.ExecuteReader());
-        //    conDBF.Close();
-
-        //    return resultTable;          
-        //}
-
+        /// <summary>
+        /// Выбирает данные за определённый период
+        /// </summary>
+        /// <param name="dateFrom">Начало периода</param>
+        /// <param name="dateTo">Конец периода</param>
+        /// <returns>Курсы валют</returns>
         public DataTable ReadbyDate(DateTime dateFrom, DateTime dateTo)
         {
             DataTable resultTable = new DataTable();
